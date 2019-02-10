@@ -390,17 +390,48 @@ class Passenger:
             self.seat = destination.seat
 
 
-def random_passegers():
-    p = Plane(5,3)
-    j = 0
-    p.spawn((4,-2),1,1)
-    p.to_image(3).save('test/test{}.png'.format(j))
-    p.update_passengers()
-    j += 1
-    p.spawn((4,-3),0,2)
-    p.to_image(3).save('test/test{}.png'.format(j))
-    while not p.passengers_in_place:
+def pack_plane(plane, destinations):
+    ''' Pack the plane for given plane and list of destinantions '''
+    p = plane
+    n = 0  # Iteration count
+    p.spawn(destinations[0],1)
+    del destinations[0]
+    n += 1
+
+    while not p.happy:
+        if len(destinations) > 0:
+            dest = destinations[0]
+            success = p.spawn(dest)
+            if success:
+                del destinations[0]
         p.update_passengers()
-        j += 1
-        p.to_image(3).save('test/test{}.png'.format(j))
-    j
+        n += 1
+    return n
+
+def pack_plane_animate(plane, destinations, filename, size=4):
+    ''' Simple animation of plane packing '''
+    p = plane
+    images = []
+    n = 0  # Iteration count
+    images.append(p.to_image(size))
+    p.spawn(destinations[0],1)
+    del destinations[0]
+    n += 1
+    images.append(p.to_image(size))
+
+    while not p.happy:
+        if len(destinations) > 0:
+            dest = destinations[0]
+            success = p.spawn(dest)
+            if success:
+                del destinations[0]
+        
+        p.update_passengers()
+        n += 1
+        images.append(p.to_image(size))
+    
+    images[0].save('{}.gif'.format(filename),
+               save_all=True,
+               append_images=images[1:],
+               duration=len(images),
+               loop=0) 
