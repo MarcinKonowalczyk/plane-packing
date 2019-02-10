@@ -84,6 +84,16 @@ class Cell:
         ''' Check whether there is someone in this cell '''
         return self.passenger is not None
 
+    @property
+    def is_alley(self):
+        ''' Check wheter cell is an alley cell '''
+        return self.seat == 0
+
+    @property
+    def is_seat(self):
+        ''' Check wheter cell is a seat cell '''
+        return not self.is_alley
+
     def __hash__(self) -> int:
         ''' Unique hash of the cell '''
         return id(self)
@@ -98,12 +108,14 @@ class Cell:
             return 'Seat cell in row {}, seat {}'.format(row,seat)
 
     def __eq__(self, other):
+        ''' Overload the == operator '''
         if is_cell(other):
             return hash(self) == hash(other)
         else:
             return False
 
     def __ne__(self, other):
+        ''' Overload the != operator '''
         return not self == other
 
 def is_cell(cell):
@@ -146,6 +158,11 @@ class Plane:
         return 2*self.rows*self.seats
     
     @property
+    def n_of_passengers(self):
+        ''' Number of passengers on the plane '''
+        return len(self._passengers)
+
+    @property
     def entrace_cell(self):
         return self[0, 0]
 
@@ -165,14 +182,13 @@ class Plane:
         for row in self._grid:
             yield row[self.seats]
     
-    def each_seat_in_a_row(self, row, dir = 'left'):
-        ''' Return each seat in the specified row '''
-        if dir == 'left':
-            return [seat for seat in reversed(p._grid[0][0:self.seats])]
-        elif dif == 'right':
-            return p._grid[0][self.seats+1:]
-        else:
-            raise ValueError('Invalid direction')
+    def all_destinations(self):
+        ''' All destinations of self '''
+        destinations = []
+        for cell in self.each_cell():
+            if cell.is_seat:
+                destinations.append((cell.row, cell.seat))
+        return destinations
 
     def __getitem__(self, key):
         ''' Get grid item method '''
@@ -187,9 +203,12 @@ class Plane:
     def spawn(self, destination, actions=0, sprite=None):
         ''' Spawn new passenger with a specified destination '''
         ec = self.entrace_cell
+        if ec.has_passenger:
+            return False
         p = Passenger(0, 0, ec, destination, actions=actions, sprite=sprite)
         ec.passenger = p
         self._passengers.append(p)
+        return True
     
     @property
     def passengers(self):
@@ -212,6 +231,16 @@ class Plane:
                 return False
         return True
 
+    @property
+    def all_passengers_present(self):
+        ''' Check wheter all the passengers are present '''
+        return self.n_of_passengers == self.n_of_seats
+
+    @property
+    def happy(self):
+        ''' Cehck that all the passengers are in place and present '''
+        return self.all_passengers_present and self.passengers_in_place
+
     def to_image(self, size=1):
         ''' Create image representation of the plane '''
         alley_sprite = Image.open('sprites/alley_{}x.png'.format(size))
@@ -232,9 +261,11 @@ class Plane:
                 cell_sprite = seat_sprite.copy()
             
             if cell.has_passenger:
-                passenger_sprite = Image.open('sprites/passenger{}_{}x.png'.format(cell.passenger.sprite,size))
+                passenger_sprite = Image.open('sprites/passenger{}_{}x.png'.format(cell.passenger.sprite, size))
                 cell_sprite.paste(passenger_sprite, (0, 0), passenger_sprite)
-            
+                if cell.passenger.is_paused:
+                    pause_sprite = Image.open('sprites/pause_{}x.png'.format(size))
+                    cell_sprite.paste(pause_sprite, (0, 0), pause_sprite)
             cell_sprite = cell_sprite.convert('RGB')  # Remove alpha channel
 
             arr[row*cs:(row+1)*cs, col*cs:(col+1)*cs, 0:3] = np.array(cell_sprite)
@@ -253,10 +284,12 @@ class Passenger:
 
     @property
     def has_actions(self):
+        ''' Check whether has actions left '''
         return self.actions > 0
 
     @property
     def is_paused(self):
+        ''' Check whether is paused '''
         return self.pause > 0
     
     @property
@@ -265,6 +298,7 @@ class Passenger:
         return self.row == self.destination[0] and self.seat == self.destination[1]
 
     def update(self):
+        ''' Update the state of self according to destination '''
         if self.pause > 0:
             self.pause -= 1
             return
@@ -311,6 +345,7 @@ class Passenger:
         self._move(self.parent_cell.right)
 
     def _shuffle(self, other):
+        ''' Shuffle sround with another passenger '''
         if not self.has_actions or not other.has_actions or other.is_paused:
             pass
         self.actions -= 1
@@ -353,3 +388,19 @@ class Passenger:
             # Update the position of self
             self.row = destination.row
             self.seat = destination.seat
+
+
+def random_passegers():
+    p = Plane(5,3)
+    j = 0
+    p.spawn((4,-2),1,1)
+    p.to_image(3).save('test/test{}.png'.format(j))
+    p.update_passengers()
+    j += 1
+    p.spawn((4,-3),0,2)
+    p.to_image(3).save('test/test{}.png'.format(j))
+    while not p.passengers_in_place:
+        p.update_passengers()
+        j += 1
+        p.to_image(3).save('test/test{}.png'.format(j))
+    j
