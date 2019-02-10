@@ -200,12 +200,13 @@ class Plane:
         else:
             raise IndexError('Only grid[row,col] __getitem__ calls are supported')
 
-    def spawn(self, destination, actions=0, sprite=None):
+    def spawn(self, destination, bag=True, actions=0, sprite=None):
         ''' Spawn new passenger with a specified destination '''
         ec = self.entrace_cell
         if ec.has_passenger:
             return False
-        p = Passenger(0, 0, ec, destination, actions=actions, sprite=sprite)
+        p = Passenger(0, 0, ec, destination, bag=bag, actions=actions, sprite=sprite)
+        if bag and destination[0]==0: p.pause = 1  # Add pause to simulate putting bag into the locker
         ec.passenger = p
         self._passengers.append(p)
         return True
@@ -273,12 +274,13 @@ class Plane:
         return Image.fromarray(np.uint8(arr))
 
 class Passenger:
-    def __init__(self, row, seat, parent, destination, actions=0, sprite=None):
+    def __init__(self, row, seat, parent, destination, bag=True, actions=0, sprite=None):
         self.parent_cell = parent
         self.actions = actions
         self.pause = 0
         self.row = row
         self.seat = seat
+        self.bag = bag
         self.destination = destination
         self.sprite = sprite if sprite is not None else randint(1,6)
 
@@ -308,8 +310,12 @@ class Passenger:
 
         if self.row < drow:
             self.move_down()
+            if self.row == drow and self.bag:
+                self.pause = 1
         elif self.row > drow:
             self.move_up()
+            if self.row == drow and self.bag:
+                self.pause = 1
         else:
             if self.seat < dseat:  # Going right
                 if self.parent_cell.right.has_passenger:
