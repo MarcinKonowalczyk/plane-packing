@@ -43,7 +43,7 @@ Send people sitting next to the alley first. Randomize rows and left/right sides
 
 The basic packing orders above compare as follows
 
-![histogram](histogram.png)
+![histogram](histogram.jpg)
 
 ## Ideas
 A lot more can be done on this, and I'm sure there are/could be some interesting academic papers on all/any of the following:
