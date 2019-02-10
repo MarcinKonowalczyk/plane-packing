@@ -1,6 +1,6 @@
 # plane-packing
 
-Simple implementation of plane packing (as in packing people into a plane).
+Simple implementation of plane packing (as in packing people into a plane). Inspired by ['The Better Boarding Method Airlines Won't Use'](https://www.youtube.com/watch?v=oAHbLRjF0vo) video from CGP Grey.
 
 ## Usage
 
@@ -63,4 +63,4 @@ A lot more can be done on this, and I'm sure there are/could be some interesting
 - Organize the code a bit better
 - Add row/seat number indicators in the plane rendering
 - Sprites are ok...?
-- 
+- Add option for the actors to pause before entering the row to simulate putting the bag into the overhead locker
