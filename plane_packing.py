@@ -264,7 +264,7 @@ class Plane:
                 passenger_sprite = Image.open('sprites/passenger{}_{}x.png'.format(cell.passenger.sprite, size))
                 cell_sprite.paste(passenger_sprite, (0, 0), passenger_sprite)
                 if cell.passenger.is_paused:
-                    pause_sprite = Image.open('sprites/pause_{}x.png'.format(size))
+                    pause_sprite = Image.open('sprites/pause2_{}x.png'.format(size))
                     cell_sprite.paste(pause_sprite, (0, 0), pause_sprite)
             cell_sprite = cell_sprite.convert('RGB')  # Remove alpha channel
 

@@ -1,41 +1,32 @@
-from plane_packing import Plane, pack_plane
-from random import shuffle, sample
+from plane_packing import Plane
+from random import sample
 
-def random_order(rows, seats):
+def random_order(plane):
     ''' Allow the passengers into the plane in a random order '''
-    p = Plane(rows,seats)
-
+    p = plane
     dest = p.all_destinations()
-    shuffle(dest)
+    dest = sample(dest,len(dest))
+    return dest
 
-    n = pack_plane(p, dest)
-    return n
-
-def back_to_front(rows, seats):
+def back_to_front(plane):
     ''' Back to front with random seat allocations '''
-    p = Plane(rows,seats)
-
+    p = plane
     dest = []
     for row in reversed(p._grid):
         dest += sample([(e.row, e.seat) for e in row if e.seat != 0],2*p.seats)
-    
-    n = pack_plane(p,dest)
-    return n
+    return dest
 
-def front_to_back(rows, seats):
+def front_to_back(plane):
     ''' Front to back with random seat allocations '''
-    p = Plane(rows,seats)
-
+    p = plane
     dest = []
     for row in p._grid:
         dest += sample([(e.row, e.seat) for e in row if e.seat != 0],2*p.seats)
-    
-    n = pack_plane(p,dest)
-    return n
+    return dest
 
-def windows_first(rows, seats):
+def windows_first(plane):
     ''' Random rows, but window seats first '''
-    p = Plane(rows,seats)
+    p = plane
     
     # This was surprisingly difficult!!
     grid = {}
@@ -48,13 +39,12 @@ def windows_first(rows, seats):
     for j in reversed([i for i in range(p.seats)]):
         dest += sample(grid[j+1], len(grid[j+1]))
     
-    n = pack_plane(p,dest)
-    return n
+    return dest
 
-def alley_first(rows, seats):
+def alley_first(plane):
     ''' Random rows, but alley seats first '''
-    p = Plane(rows,seats)
-    
+    p = plane
+
     grid = {}
     for j in range(p.seats):
         grid[j+1] = []
@@ -65,5 +55,4 @@ def alley_first(rows, seats):
     for j in range(p.seats):
         dest += sample(grid[j+1],len(grid[j+1]))
     
-    n = pack_plane(p,dest)
-    return n
+    return dest
